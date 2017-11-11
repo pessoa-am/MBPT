@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+import sys
+import re
+import string
+
+matrix = [
+	["-","a","c","g","t","r","y","s","w","k","m","b","d","h","v","n"],
+	["a","A","M","R","W","R","H","V","W","D","M","N","D","H","V","N"],
+	["c","M","C","S","Y","V","Y","S","H","B","M","B","N","H","V","N"],
+	["g","R","S","G","K","R","B","S","D","K","V","B","D","N","V","N"],
+	["t","W","Y","K","T","D","Y","B","W","K","H","B","D","H","N","N"],
+	["r","R","V","R","D","R","N","V","D","D","V","N","D","N","V","N"],
+	["y","H","Y","B","Y","N","Y","B","H","B","H","B","N","H","N","N"],
+	["s","V","S","S","B","V","B","S","N","B","V","B","N","N","V","N"],
+	["w","W","H","D","W","D","H","N","W","D","H","N","D","H","N","N"],
+	["k","D","B","K","K","D","B","B","D","K","N","B","D","N","N","N"],
+	["m","M","M","V","H","V","H","V","H","N","M","N","N","H","V","N"],
+	["b","N","B","B","B","N","B","B","N","B","N","B","N","N","N","N"],
+	["d","D","N","D","D","D","N","N","D","D","N","N","D","N","N","N"],
+	["h","H","H","N","H","N","H","N","H","N","H","N","N","H","N","N"],
+	["v","V","V","V","N","V","N","V","N","N","V","N","N","N","V","N"],
+	["n","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N"]
+]
+
+if len(sys.argv) < 2 or sys.argv[1] == "--help":
+    sys.exit("Usage:\nconsensus.py [FASTA Sequence File] >[Destination FASTA File]\n")
+
+target = []
+a = -1
+
+with open(sys.argv[1], "r") as FASFILE:
+    for line in FASFILE:
+        line = line.strip()
+        if line.startswith(">"):
+            a += 1
+            target.append("")
+        else:
+            target[a] += line
+
+le = min([len(i)-1 for i in target])
+
+contarget = ""
+j = 0
+
+
+for i in range(le + 1):
+	for sequence in target:
+		nuc = sequence[i]
+		if j == 0:
+			con = nuc
+		if re.match("[acgtryswkmhdvnb]", con) and j != 0:
+			case = 1
+		else:
+			case = 0
+		nuc = nuc.translate(str.maketrans('-ACGTRYSWKMBDHVNacgtryswkmbdhvn','0123456789ABCDEF123456789ABCDEF'))
+		con = con.translate(str.maketrans('-ACGTRYSWKMBDHVNacgtryswkmbdhvn','0123456789ABCDEF123456789ABCDEF'))
+		nuc = int(nuc, 16)
+		con = int(con, 16)
+		con = matrix[nuc][con]
+		if case == 1:
+			con = con.lower()
+		j += 1
+	j = 0
+	contarget += con
+
+print(">Consensus")
+print(contarget)
