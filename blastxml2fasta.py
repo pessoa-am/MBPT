@@ -1,27 +1,49 @@
 #!/usr/bin/env python3
 
 import sys
-import xml.etree.ElementTree as ET
+import argparse
+from Bio import SeqIO
+from Bio.Blast import NCBIXML
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
-if len(sys.argv) < 2 or sys.argv[1] == "--help":
-	sys.exit("Usage:\nblastxml2fasta.py [BLAST XML File (*.xml)] >[Destination FASTA File]")
+def parse_args():
+	parser = argparse.ArgumentParser(description="Convert BLAST XML to FASTA format. Adds 5' gaps to facilitate downstream alignment with query sequence.")
+	parser.add_argument("input_file", metavar="XML_FILE", help="Input BLAST XML file (*.xml)")
+	parser.add_argument("-o", metavar="OUTPUT_FILE", help="Output FASTA to file instead of stdout")
 
-hits = {}
-root = ET.parse(sys.argv[1]).getroot()
+	return parser.parse_args()
 
-for hit in root.findall(".//Hit"):
-	hit_def = hit.find("Hit_def").text.strip()
-	hit_accession = hit.find("Hit_accession").text.strip()
-	locus = f"{hit_accession}|{hit_def}"
-	hsp = hit.find("Hit_hsps/Hsp")
-	cs = int(hsp.find("Hsp_query-from").text)
-	seq = hsp.find("Hsp_hseq").text.strip()
+def blastxml2seqrecords(input_file):
+	hits = {}
+	blast_record = NCBIXML.read(open(input_file, 'r'))
+	for alignment in blast_record.alignments:
+		for hsp in alignment.hsps:
+			hit_def = alignment.hit_def
+			hit_accession = alignment.accession
+			locus = f"{hit_accession}|{hit_def}"
+			cs = int(hsp.query_start)
+			seq = hsp.sbjct
+			for i in range(2, cs + 1):
+				seq = "-" + seq
+			hits[locus] = seq
+			break
 
-	for i in range(2, cs + 1):
-		seq = "-" + seq
+	seq_records = []
+	for locus in hits:
+		seq_records.append(SeqRecord(Seq(hits[locus]), id=locus, description=""))
+	return seq_records
 
-	hits[locus] = seq
+def main():
+	args = parse_args()
+	
+	seq_records = blastxml2seqrecords(args.input_file)
+	
+	if args.o:
+		SeqIO.write(seq_records, args.o, "fasta")
+	else:
+		SeqIO.write(seq_records, sys.stdout, "fasta")
+		pass
 
-for locus in hits:
-	print(f">{locus}")
-	print(hits[locus])
+if __name__ == "__main__":
+	main()
