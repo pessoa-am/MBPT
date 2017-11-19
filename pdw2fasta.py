@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import sys
-import re
 import argparse
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -14,7 +13,7 @@ def parse_args():
 	return parser.parse_args()
 
 def pdw2seqrecord(input_file):
-	
+
 	with open(input_file, "r") as f:
 		content = f.readlines()
 
@@ -22,7 +21,7 @@ def pdw2seqrecord(input_file):
 
 	seq = ""
 	name = ""
-	
+
 	for line in content:
 		if line[0].isdigit():
 			seq += line[1].replace(" ", "")
@@ -37,7 +36,7 @@ def main():
 	args = parse_args()
 
 	seq_record = pdw2seqrecord(args.input_file)
-	
+
 	if args.o:
 		SeqIO.write(seq_record, args.o, "fasta")
 	else:

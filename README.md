@@ -36,5 +36,4 @@ Requires `argparse` and `biopython`.
 
 Converts a pDRAW32 file into JSON.
 
-Requires `argparse` and `biopython`.
-
+Requires `argparse`.

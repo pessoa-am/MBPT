@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 import re
-import string
 import argparse
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -75,9 +74,9 @@ def main():
 
 	for record in SeqIO.parse(args.input_file, "fasta"):
 		seq_records.append(record)
-	
+
 	record = consensus(seq_records)
-	
+
 	if args.o:
 		SeqIO.write(record, args.o, "fasta")
 	else:
