@@ -37,3 +37,9 @@ Requires `argparse` and `biopython`.
 Converts a pDRAW32 file into JSON.
 
 Requires `argparse`.
+
+## get_misprime_libs.py
+
+Converts mispriming libraries downloaded directly from the Primer3Plus repository into Python a file that can be imported accordingly. Particularly useful for [primer3-py](https://github.com/libnano/primer3-py). By default creates a file called `misprime_libs.py`.
+
+Requires `argparse` and `biopython`.
